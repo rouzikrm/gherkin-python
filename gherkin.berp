@@ -29,6 +29,7 @@ StepArg := (DataTable | DocString)
 
 DataTable! := #TableRow+
 DocString! := #DocStringSeparator #Other* #DocStringSeparator
+Environment! := #EnvironmentSeparator #Other* #EnvironmentSeparator
 
 Tags! := #TagLine+
 

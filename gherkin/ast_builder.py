@@ -48,9 +48,20 @@ class AstBuilder(object):
             return tags
 
         for token in tags_node.get_tokens('TagLine'):
-            tags += [{'id': self.id_generator.get_next_id(),
-                      'location': self.get_location(token, tag_item['column']),
-                      'name': tag_item['text']} for tag_item in token.matched_items]
+          for tag_item in token.matched_items:
+            if len(tag_item['text'].split('='))==2:
+              tags.append({
+                'id': self.id_generator.get_next_id(),
+                'location': self.get_location(token, tag_item['column']),
+                'name': tag_item['text'].split('=')[0],
+                'value': tag_item['text'].split('=')[1].replace('"','')
+              })
+            else:
+              tags.append({
+                'id': self.id_generator.get_next_id(),
+                'location': self.get_location(token, tag_item['column']),
+                'name': tag_item['text']
+              })
 
         return tags
 
@@ -108,7 +119,14 @@ class AstBuilder(object):
                             else None)
             line_tokens = node.get_tokens('Other')
             content = '\n'.join([t.matched_text for t in line_tokens])
-
+            if '[Environment]' in content: 
+              node.rule_type = 'Environment'
+              return self.reject_nones({
+                  'location': self.get_location(separator_token),
+                  'environment': content,
+                  'delimiter': separator_token.matched_keyword,
+                  'mediaType': media_type
+              })
             return self.reject_nones({
                 'location': self.get_location(separator_token),
                 'content': content,
